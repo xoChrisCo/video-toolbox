@@ -34,7 +34,7 @@ import os
 import subprocess
 import sys
 import time
-from tqdm import tqdm
+from tqdm import tqdm # type: ignore
 
 def clean_temp_files(file_path):
     temp_file = file_path + '.fix_health_check_temp.mkv'
