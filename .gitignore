@@ -1,0 +1,6 @@
+logs/
+output-healthcheck/
+output-media-inventory/
+input-files/*.pyc
+__pycache__/
+.DS_Store
