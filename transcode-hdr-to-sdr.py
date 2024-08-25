@@ -45,8 +45,8 @@ import time
 import re
 import argparse
 from datetime import datetime, timedelta
-from tqdm import tqdm
-from colorama import init, Fore, Style
+from tqdm import tqdm # type: ignore
+from colorama import init, Fore, Style # type: ignore
 
 # Initialize colorama
 init(autoreset=True)

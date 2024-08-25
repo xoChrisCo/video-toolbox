@@ -1,7 +1,7 @@
 import subprocess
 import os
 from datetime import datetime
-from colorama import init, Fore, Style
+from colorama import init, Fore, Style # type: ignore
 import sys
 import re
 
