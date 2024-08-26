@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD024 -->
+
 # Video Toolbox
 
 This repository contains a set of tools for analyzing, health-checking, and transcoding video files, with a focus on maintaining a healthy media library and improving compatibility with Plex media server.
@@ -115,7 +117,7 @@ Contributions to improve these scripts or add new features are welcome. Please f
 
 ## Author
 
-Created by Christopher Conradi (https://github.com/xoChrisCo) as a toolbox to maintain a healthy media library and debug Plex playback issues.
+Created by Christopher Conradi (<https://github.com/xoChrisCo>) as a toolbox to maintain a healthy media library and debug Plex playback issues.
 
 ## License
 
