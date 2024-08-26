@@ -7,6 +7,7 @@ This repository contains a set of tools for analyzing, health-checking, and tran
 1. [health-check.py](#health-checkpy)
 2. [media-inventory.py](#media-inventorypy)
 3. [transcode-hdr-to-sdr.py](#transcode-hdr-to-sdrpy)
+4. [create_symlinks.py](#create_symlinkspy)
 
 ## health-check.py
 
@@ -54,7 +55,7 @@ This Python script automates the process of transcoding HDR videos to SDR format
 4. Run the script:
 
 ```bash
-python transcode-hdr-to-sdr.py
+python3 transcode-hdr-to-sdr.py
 ```
 
 ### Key Features
@@ -64,11 +65,31 @@ python transcode-hdr-to-sdr.py
 - Provides real-time progress updates including ETA and FPS
 - Logs detailed information for each transcoding operation
 
+## create_symlinks.py
+
+This Python script creates a folder of symlinks based on a list of file paths. It's designed to help prepare a set of files for processing with Tdarr, allowing you to create a temporary library from a specific list of files rather than an entire folder.
+
+### Usage
+
+```bash
+python3 create_symlinks.py -f <input_file> [-o <output_folder>] [-q]
+python3 create_symlinks.py -h
+```
+
+### Key Features
+
+- Creates symlinks from a list of file paths provided in a text file
+- Allows specification of output directory for symlinks (default: ./symlinks)
+- Provides detailed feedback on the process, including number of files processed and symlinks created
+- Includes a quiet mode option to suppress informational output
+- Handles errors gracefully, providing warnings for non-existent files or already existing symlinks
+
 ## Folder Structure
 
 - `health-check.py`: Script for checking the health of video files
 - `media-inventory.py`: Script for analyzing video files and generating metadata CSV
 - `transcode-hdr-to-sdr.py`: Script for transcoding HDR videos to SDR
+- `create_symlinks.py`: Script for creating symlinks from a list of files
 - `output-healthcheck/`: Output folder for health check results (not tracked in git)
 - `output-media-inventory/`: Output folder for media inventory results (not tracked in git)
 - `logs/`: Folder for log files (not tracked in git)
@@ -80,6 +101,7 @@ This toolkit provides a comprehensive set of tools to maintain a healthy media l
 - Identifying potentially corrupt or problematic video files
 - Gathering detailed metadata about your video collection
 - Addressing specific playback issues related to HDR content on Plex
+- Preparing specific sets of files for processing with Tdarr
 
 ## Prerequisites
 

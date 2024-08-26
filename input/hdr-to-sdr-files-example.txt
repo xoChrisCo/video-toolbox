@@ -1,0 +1,2 @@
+/Volumes/media/media/tv/file.mkv
+/Volumes/media/media/tv/file with spaces in the name.mkv
