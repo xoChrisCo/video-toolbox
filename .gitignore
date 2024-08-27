@@ -1,5 +1,17 @@
+# Ignore logs directory
 logs/
-output*
-input*
+
+# Ignore all files in input directory except hdr-to-sdr-files-example.txt
+input/*
+!input/hdr-to-sdr-files-example.txt
+
+# Folder placeholders
+output-health-check/*
+output-media-inventory/*
+logs/*
+
+# Ignore Python cache files
 __pycache__/
+
+# Ignore macOS system files
 .DS_Store

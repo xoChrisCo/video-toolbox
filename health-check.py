@@ -13,7 +13,7 @@ Arguments:
     -s,  --samples        : Number of samples to check per video (default: 1).
     -d,  --duration       : Duration of each sample in seconds (default: full video).
     -e,  --extensions     : Comma-separated list of video file extensions to check (default: mp4,mkv,avi,mov,flv,wmv).
-    -o,  --output         : Custom output folder for the CSV file (default: output_healthcheck).
+    -o,  --output         : Custom output folder for the CSV file (default: output-healt-hcheck).
     -q,  --quiet          : Enable quiet mode (less verbose output).
     -h,  --help           : Display this help message.
 
@@ -142,7 +142,7 @@ def main():
     parser.add_argument("-d", "--duration", type=int, help="Duration of each sample in seconds (default: full video)")
     parser.add_argument("-e", "--extensions", default="mp4,mkv,avi,mov,flv,wmv", 
                         help="Comma-separated list of video file extensions to check (default: mp4,mkv,avi,mov,flv,wmv)")
-    parser.add_argument("-o", "--output", default="output-healthcheck", help="Custom output folder for the CSV file")
+    parser.add_argument("-o", "--output", default="output-health-check", help="Custom output folder for the CSV file")
     parser.add_argument("-q", "--quiet", action="store_true", help="Enable quiet mode (less verbose output)")
     args = parser.parse_args()
 
