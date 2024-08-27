@@ -84,6 +84,10 @@ def transcode_file(input_file, output_folder, preset_file, idx, total_files, qui
         '-o', temp_file,
     ]
 
+    # Output the command being run
+    print(f"\n{Fore.CYAN}Running command:")
+    print(f"{Fore.YELLOW}{' '.join(command)}")
+
     # Create a timestamp for log file
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     logs_folder = os.path.join(os.path.dirname(input_file), 'logs')
@@ -93,6 +97,7 @@ def transcode_file(input_file, output_folder, preset_file, idx, total_files, qui
     # Execute the command and log progress
     with open(log_file, 'w') as log:
         log.write(f"Starting transcoding: {input_file}\n")
+        log.write(f"Command: {' '.join(command)}\n")
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         start_time = time.time()
