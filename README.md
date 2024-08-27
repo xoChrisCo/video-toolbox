@@ -93,7 +93,7 @@ python3 create_symlinks.py -h
 - `transcode-hdr-to-sdr.py`: Script for transcoding HDR videos to SDR
 - `create_symlinks.py`: Script for creating symlinks from a list of files
 - `output-healthcheck/`: Output folder for health check results (not tracked in git)
-- `output-media-inventory/`: Output folder for media inventory results (not tracked in git)
+- `output/`: Output folder for media inventory results (not tracked in git)
 - `logs/`: Folder for log files (not tracked in git)
 
 ## Why Use This Toolkit?

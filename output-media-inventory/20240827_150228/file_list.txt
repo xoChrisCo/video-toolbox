@@ -1,0 +1,6 @@
+# Resume command: media-inventory.py -i /Volumes/media/media/movies/Pulp Fiction (1994)/ -s 0 -d 2 --hwaccel videotoolbox -r output-media-inventory/20240827_150228/file_list.txt
+# Cursor: 1
+# You can use '#' for single-line comments and '"""' for multi-line comments
+# Files commented out will be skipped during processing
+
+/Volumes/media/media/movies/Pulp Fiction (1994)/Pulp Fiction (1994) Remux-2160p.mkv

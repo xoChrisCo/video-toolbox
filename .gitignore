@@ -7,8 +7,11 @@ input/*
 
 # Folder placeholders
 output-health-check/*
-output-media-inventory/*
 logs/*
+
+# Ignore contents of media-inventory/output but keep the folder
+media-inventory/output/*
+!media-inventory/output/.gitkeep
 
 # Ignore Python cache files
 __pycache__/
