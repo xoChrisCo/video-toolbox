@@ -481,9 +481,9 @@ def simulate_plex_transcoding(file_path, start_time, duration, hwaccel, debug_le
 
     # Output settings (adjusted for Plex Transcoder)
     command.extend([
-        '-c:v', 'libx264',  # You might need to change this based on Plex Transcoder's available codecs
-        '-preset', 'veryfast',
-        '-b:v', '4M',  # Use bitrate instead of CRF
+        '-c:v', 'h264_vaapi',  # Using VAAPI for encoding, which is likely supported by Plex
+        '-vf', 'scale_vaapi=w=1920:h=1080',  # Scaling to 1080p, adjust as needed
+        '-b:v', '4M',
         '-maxrate', '4M',
         '-bufsize', '8M',
         '-c:a', 'aac',
