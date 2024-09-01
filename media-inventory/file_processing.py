@@ -479,11 +479,13 @@ def simulate_plex_transcoding(file_path, start_time, duration, hwaccel, debug_le
         command.extend(['-hwaccel', 'videotoolbox'])
     # For other acceleration types, you may need to adjust based on Plex Transcoder's capabilities
 
-    # Output settings (adjust these based on your Plex settings)
+    # Output settings (adjusted for Plex Transcoder)
     command.extend([
         '-c:v', 'libx264',  # You might need to change this based on Plex Transcoder's available codecs
         '-preset', 'veryfast',
-        '-crf', '23',
+        '-b:v', '4M',  # Use bitrate instead of CRF
+        '-maxrate', '4M',
+        '-bufsize', '8M',
         '-c:a', 'aac',
         '-b:a', '128k',
         '-f', 'null',
