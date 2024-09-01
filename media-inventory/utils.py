@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 import re
 import subprocess
+from colorama import Fore, Style # type: ignore
 
 def create_output_folder(base_output_dir):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -41,10 +42,18 @@ def update_cursor(file_path, new_cursor):
 
 def generate_file_list(search_dir, extensions, output_dir, original_command):
     file_list = []
+    file_count = 0
+    print(f"{Fore.CYAN}Counting files to process...{Style.RESET_ALL}")
     for root, _, files in os.walk(search_dir):
         for file in sorted(files):
             if file.lower().endswith(tuple(extensions)):
                 file_list.append(os.path.join(root, file))
+                file_count += 1
+                if file_count % 100 == 0:
+                    print(f"{Fore.CYAN}Found {file_count} files so far...{Style.RESET_ALL}")
+    
+    print(f"{Fore.GREEN}Total files found: {file_count}{Style.RESET_ALL}")
+    
     file_list_path = os.path.join(output_dir, "file_list.txt")
     with open(file_list_path, 'w', encoding='utf-8') as f:
         f.write(f"# Resume command: {original_command} -r {file_list_path}\n")
@@ -53,7 +62,7 @@ def generate_file_list(search_dir, extensions, output_dir, original_command):
         f.write("# Files commented out will be skipped during processing\n\n")
         for file_path in file_list:
             f.write(f"{file_path}\n")
-    return file_list_path, len(file_list)
+    return file_list_path, file_count
 
 def format_duration(seconds):
     try:
@@ -72,16 +81,16 @@ def format_duration(seconds):
 def normalize_path(path):
     return os.path.abspath(path)
 
-def get_json_value(json_data, key_path):
+def get_json_value(json_data, key_path, default="N/A"):
     try:
         for key in key_path.split('.'):
             if key.isdigit():
                 json_data = json_data[int(key)]
             else:
                 json_data = json_data[key]
-        return json_data
+        return json_data if json_data is not None else default
     except (KeyError, IndexError, TypeError):
-        return "N/A"
+        return default
 
 def is_empty_or_na(value):
     return value in (None, "", "N/A", "null", "NULL", "Null")

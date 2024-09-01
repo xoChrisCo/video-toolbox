@@ -84,8 +84,6 @@ Examples:
 
 import argparse
 import os
-import argparse
-import os
 import time
 import csv
 import sys
@@ -113,7 +111,6 @@ def main(input_path, extensions, base_output_dir, quiet, csv_delimiter, concat_s
         output_dir = create_output_folder(base_output_dir)
         print(f"{Fore.CYAN}Indexing media files in {input_path}")
         print(f"{Fore.CYAN}Using arguments: {' '.join(sys.argv[1:])}")
-        print(f"{Fore.CYAN}Counting files to process...")
         
         if is_file_list:
             file_list, total_files = read_file_list(input_path), 0
@@ -149,7 +146,13 @@ def main(input_path, extensions, base_output_dir, quiet, csv_delimiter, concat_s
             "Duration", "Frame Rate", "Audio Codecs", "Audio Codec Long Names", "Audio Channels",
             "Audio Sample Rates", "Audio Bitrates", "Audio Bit Depth", "Audio Stream Count",
             "Subtitle Languages", "Subtitle Formats", "Subtitle Stream Count",
-            "Creation Date", "Modification Date", "Issues Detected", "Issue Description"
+            "Creation Date", "Modification Date", "Issues Detected", "Issue Description",
+            "Unknown metadata", "Non-standard video codec", "Non-standard audio codec",
+            "Problematic subtitle format", "High bitrate", "Low bitrate",
+            "Non-standard resolution", "Non-standard frame rate", "High bit depth",
+            "HDR content", "4K content", "Complex video profile", "Variable frame rate",
+            "Interlaced content", "High subtitle stream count", "Uncommon container format",
+            "Very high bitrate", "Multiple audio streams", "Dolby Vision Profile 5"
         ]
 
         for i in range(samples):
@@ -168,8 +171,9 @@ def main(input_path, extensions, base_output_dir, quiet, csv_delimiter, concat_s
             "no_issues": 0,
             "with_issues": 0
         }
+
         for i, file_path in enumerate(file_list[cursor:], start=cursor):
-            print(f"\n{Fore.CYAN}Processing file {i+1}/{len(file_list)}: {file_path}{Style.RESET_ALL}")
+            print(f"\nProcessing file {i+1}/{len(file_list)}: {file_path}")
             result = process_file(file_path, duration, samples, concat_separator, hwaccel, debug_level)
             stats["processed"] += 1
 
@@ -202,13 +206,10 @@ def main(input_path, extensions, base_output_dir, quiet, csv_delimiter, concat_s
             avg_time_per_file = elapsed_time / stats["processed"]
             estimated_time_remaining = avg_time_per_file * (len(file_list) - stats["processed"])
 
-            print(f"\n{Fore.CYAN}Progress: {stats['processed']}/{len(file_list)} files processed")
+            print(f"Progress: {stats['processed']}/{len(file_list)} files processed")
             print(f"Elapsed time: {elapsed_time:.2f} seconds")
-            print(f"Estimated time remaining: {estimated_time_remaining:.2f} seconds{Style.RESET_ALL}")
+            print(f"Estimated time remaining: {estimated_time_remaining:.2f} seconds")
             
-            if not quiet:
-                print(f"\r{Fore.CYAN}Processed {stats['processed']} of {stats['total']} files: {file_path}", end='', flush=True)
-
     end_time = time.time()
     total_time = end_time - start_time
     avg_time_per_file = total_time / stats["processed"] if stats["processed"] > 0 else 0
@@ -223,8 +224,8 @@ class CustomHelpFormatter(argparse.HelpFormatter):
 
     def _fill_text(self, text, width, indent):
         return ''.join(indent + line for line in text.splitlines(keepends=True))
-
-if __name__ == "__main__":
+    
+def parse_arguments():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=CustomHelpFormatter,
@@ -249,14 +250,36 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--concat", default="; ", help="Separator for concatenating text (default: '; ')")
     parser.add_argument("-t", "--duration", type=float, default=None, 
                         help="Duration of each transcode simulation in seconds (default: full file duration)")
-    parser.add_argument("-s", "--samples", type=int, default=1, help="Number of transcode samples to take (default: 1, 0 to skip transcoding)")
-    parser.add_argument("--hwaccel", choices=['qsv', 'videotoolbox', 'none'], default='none',
+    parser.add_argument("-s", "--samples", type=int, default=1, 
+                        help="Number of transcode samples to take (default: 1, 0 to skip transcoding)")
+    parser.add_argument("--hwaccel", choices=['auto', 'none', 'cuda', 'qsv', 'videotoolbox'], default='none',
                         help="Specify hardware accelerator to use (default: none)")
     parser.add_argument("-q", "--quiet", action="store_true", help="Enable quiet mode (less verbose output)")
     parser.add_argument("-d", "--debug", type=int, choices=[0, 1, 2], default=0,
                         help="Debug level: 0 (Error, default), 1 (Warning), 2 (Debug)")
+    
     args = parser.parse_args()
 
+    # Validate arguments
+    if args.resume and not os.path.isfile(args.resume):
+        parser.error(f"Resume file does not exist: {args.resume}")
+    if args.input and not os.path.isdir(args.input):
+        parser.error(f"Input directory does not exist: {args.input}")
+    if args.file_list and not os.path.isfile(args.file_list):
+        parser.error(f"File list does not exist: {args.file_list}")
+    if args.samples < 0:
+        parser.error("Number of samples cannot be negative")
+    if args.duration is not None and args.duration <= 0:
+        parser.error("Duration must be greater than 0")
+    if not args.extensions:
+        parser.error("At least one file extension must be specified")
+    if len(args.delimiter) != 1:
+        parser.error("Delimiter must be a single character")
+
+    return args
+
+if __name__ == "__main__":
+    args = parse_arguments()
     extensions = tuple(f".{ext.lower().strip()}" for ext in args.extensions.split(','))
 
     try:
@@ -265,13 +288,9 @@ if __name__ == "__main__":
                  args.quiet, args.delimiter, args.concat, args.duration, args.samples, 
                  args.hwaccel, args.debug, resume_file=args.resume)
         elif args.input:
-            if not os.path.isdir(args.input):
-                raise ValueError(f"{args.input} is not a valid directory")
             main(args.input, extensions, args.output, args.quiet, args.delimiter, 
                  args.concat, args.duration, args.samples, args.hwaccel, args.debug)
         elif args.file_list:
-            if not os.path.isfile(args.file_list):
-                raise ValueError(f"{args.file_list} is not a valid file")
             main(args.file_list, extensions, args.output, args.quiet, args.delimiter, 
                  args.concat, args.duration, args.samples, args.hwaccel, args.debug, is_file_list=True)
     except Exception as e:
