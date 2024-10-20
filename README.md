@@ -1,124 +1,35 @@
-<!-- markdownlint-disable MD024 -->
+# 🎬 Video Toolbox 🧰
 
-# Video Toolbox
+Welcome to the Video Toolbox, your one-stop shop for all your video file shenanigans! 🎉
 
-This repository contains a set of tools for analyzing, health-checking, and transcoding video files, with a focus on maintaining a healthy media library and improving compatibility with Plex media server.
+Are you tired of manually sifting through your massive movie collection? Sick of squinting at video frames to spot quality differences? Well, put on your director's hat and grab some popcorn, because we've got the tools to make your life easier!
 
-## Contents
+## What's in the Toolbox?
 
-1. [health-check.py](#health-checkpy)
-2. [media-inventory.py](#media-inventorypy)
-3. [transcode-hdr-to-sdr.py](#transcode-hdr-to-sdrpy)
-4. [create_symlinks.py](#create_symlinkspy)
+More information in respective README.md files
 
-## health-check.py
+### 1. 📊 Media Inventory
 
-This Python script performs health checks on video files in a specified directory and its subdirectories, using ffmpeg to analyze multiple samples of each video.
+This little gem will help you catalog your media faster than you can say "Action!" It dives deep into your video files, pulling out all sorts of nerdy details that would make even the geekiest film buff swoon.
 
-### Usage
+### 2. 🔍 Video Quality Inspection Tool
 
-```bash
-python3 health-check.py -i <input_folder> [-s <samples>] [-d <duration>] [-e <extensions>] [-o <output>] [-q] [-h]
-```
+Ever wished you had x-ray vision to spot the differences between video files? This tool is the next best thing! It'll generate screenshots and video samples faster than you can say "Cut!"
 
-### Key Features
+## How to Use
 
-- Recursively checks video files in the specified folder and subfolders
-- Allows for multiple samples at different points in each video
-- Creates a CSV file with the results, including filename, path, any errors, and check duration
-- Displays detailed progress information by default (use -q for less verbose output)
+Each tool comes with its own README file, packed with more details than a director's cut. Head over to their respective folders to uncover the secrets of:
 
-## media-inventory.py
+- Installation (don't worry, it's easier than assembling IKEA furniture)
+- Usage (no film school degree required)
+- Options (customize to your heart's content)
 
-This Python script analyzes video files in a specified directory and its subdirectories, extracting various metadata using ffprobe and generating a CSV file with detailed information.
+## 🎥 Coming Attractions
 
-### Usage
+Stay tuned! More exciting tools will be joining our star-studded lineup soon. We're always working on the next blockbuster feature!
 
-```bash
-python3 media-inventory.py -i <input_folder> [-e <extensions>] [-o <output>] [-q] [-h]
-```
+## The End Credits
 
-### Key Features
+Remember, if you run into any trouble, don't yell "Cut!" just yet. Check out the individual READMEs or open an issue. We're here to make your video management adventure a smash hit!
 
-- Recursively searches for video files in the specified directory
-- Extracts detailed metadata for each video file using ffprobe
-- Saves results in a CSV file with a timestamp in the filename
-- Displays detailed progress information by default (use -q for less verbose output)
-
-## transcode-hdr-to-sdr.py
-
-This Python script automates the process of transcoding HDR videos to SDR format, specifically converting from bt2020nc color profile to bt709. It's designed to fix issues where Plex is unable to play bt2020nc 10-bit color profile videos.
-
-### Usage
-
-1. Run `media-inventory.py` to generate a CSV of video file information.
-2. Filter the CSV to identify files for transcoding.
-3. Copy the filtered list into 'hdr-video-files.txt'.
-4. Run the script:
-
-```bash
-python3 transcode-hdr-to-sdr.py
-```
-
-### Key Features
-
-- Processes a list of files specified in 'hdr-video-files.txt'
-- Uses HandBrakeCLI for transcoding, maintaining all metadata, subtitles, and audio tracks
-- Provides real-time progress updates including ETA and FPS
-- Logs detailed information for each transcoding operation
-
-## create_symlinks.py
-
-This Python script creates a folder of symlinks based on a list of file paths. It's designed to help prepare a set of files for processing with Tdarr, allowing you to create a temporary library from a specific list of files rather than an entire folder.
-
-### Usage
-
-```bash
-python3 create_symlinks.py -f <input_file> [-o <output_folder>] [-q]
-python3 create_symlinks.py -h
-```
-
-### Key Features
-
-- Creates symlinks from a list of file paths provided in a text file
-- Allows specification of output directory for symlinks (default: ./symlinks)
-- Provides detailed feedback on the process, including number of files processed and symlinks created
-- Includes a quiet mode option to suppress informational output
-- Handles errors gracefully, providing warnings for non-existent files or already existing symlinks
-
-## Folder Structure
-
-- `health-check.py`: Script for checking the health of video files
-- `media-inventory.py`: Script for analyzing video files and generating metadata CSV
-- `transcode-hdr-to-sdr.py`: Script for transcoding HDR videos to SDR
-- `create_symlinks.py`: Script for creating symlinks from a list of files
-- `output-healthcheck/`: Output folder for health check results (not tracked in git)
-- `output/`: Output folder for media inventory results (not tracked in git)
-- `logs/`: Folder for log files (not tracked in git)
-
-## Why Use This Toolkit?
-
-This toolkit provides a comprehensive set of tools to maintain a healthy media library and address common issues with Plex playback. It allows for:
-
-- Identifying potentially corrupt or problematic video files
-- Gathering detailed metadata about your video collection
-- Addressing specific playback issues related to HDR content on Plex
-- Preparing specific sets of files for processing with Tdarr
-
-## Prerequisites
-
-- Python 3.x
-- ffmpeg and ffprobe
-- HandBrakeCLI (for transcoding)
-
-## Contributing
-
-Contributions to improve these scripts or add new features are welcome. Please feel free to submit pull requests or open issues for any bugs or feature requests.
-
-## Author
-
-Created by Christopher Conradi (<https://github.com/xoChrisCo>) as a toolbox to maintain a healthy media library and debug Plex playback issues.
-
-## License
-
-[Specify your license here, e.g., MIT, GPL, etc.]
+Now, lights, camera, action! 🎭🎦

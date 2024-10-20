@@ -1,17 +1,10 @@
-# Ignore logs directory
-logs/
-
-# Ignore all files in input directory except hdr-to-sdr-files-example.txt
-input/*
-!input/hdr-to-sdr-files-example.txt
-
-# Folder placeholders
-output-health-check/*
-logs/*
-
 # Ignore contents of media-inventory/output but keep the folder
 media-inventory/output/*
 !media-inventory/output/.gitkeep
+
+# Ignore contents of quality-inspector/samples but keep the folder
+quality-inspector/samples/*
+!quality-inspector/samples/.gitkeep
 
 # Ignore Python cache files
 __pycache__/

@@ -1,2 +1,0 @@
-# Resume command: media-inventory.py -i /Volumes/media/media/movies/Pulp Fiction (1994)/ -s 0 -i output-media-inventory/20240827_102239-file_list.txt
-# Cursor: 0

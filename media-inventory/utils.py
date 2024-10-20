@@ -1,132 +1,226 @@
+import sys
+import shutil
+import csv
+from decimal import Decimal
 import os
-from datetime import datetime
-import re
-import subprocess
-from colorama import Fore, Style # type: ignore
+from config import LANGUAGE_MAPPING
 
-def create_output_folder(base_output_dir):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_dir = os.path.join(base_output_dir, timestamp)
-    os.makedirs(output_dir, exist_ok=True)
-    return output_dir
+def format_time(seconds):
+    """
+    Format a duration in seconds to a human-readable string.
 
-def read_file_list(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    content = re.sub(r'""".*?"""', '', content, flags=re.DOTALL)
-    lines = content.split('\n')
-    file_list = []
-    cursor = 0
-    for line in lines:
-        line = line.strip()
-        if line.startswith("# Cursor:"):
-            try:
-                cursor = int(line.split(":")[1].strip())
-            except ValueError:
-                cursor = 0
-        elif not line.startswith('#') and line:
-            file_list.append(line)
-    return file_list, cursor
+    Args:
+    seconds (float): The duration in seconds.
 
-def update_cursor(file_path, new_cursor):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-    for i, line in enumerate(lines):
-        if line.startswith("# Cursor:"):
-            lines[i] = f"# Cursor: {new_cursor}\n"
-            break
+    Returns:
+    str: A formatted string representing the duration.
+    """
+    years, remainder = divmod(int(seconds), 31536000)  # 365 days
+    months, remainder = divmod(remainder, 2592000)  # 30 days
+    weeks, remainder = divmod(remainder, 604800)  # 7 days
+    days, remainder = divmod(remainder, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    
+    parts = []
+    if years > 0:
+        parts.append(f"{years} year{'s' if years != 1 else ''}")
+    if months > 0:
+        parts.append(f"{months} month{'s' if months != 1 else ''}")
+    if weeks > 0:
+        parts.append(f"{weeks} week{'s' if weeks != 1 else ''}")
+    if days > 0:
+        parts.append(f"{days} day{'s' if days != 1 else ''}")
+    if hours > 0:
+        parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
+    if minutes > 0:
+        parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
+    if seconds > 0 or not parts:
+        parts.append(f"{seconds} second{'s' if seconds != 1 else ''}")
+    
+    if len(parts) > 1:
+        return ', '.join(parts[:-1]) + f" and {parts[-1]}"
+    elif parts:
+        return parts[0]
     else:
-        lines.insert(1, f"# Cursor: {new_cursor}\n")
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.writelines(lines)
-
-def generate_file_list(search_dir, extensions, output_dir, original_command):
-    file_list = []
-    file_count = 0
-    print(f"{Fore.CYAN}Counting files to process...{Style.RESET_ALL}")
-    for root, _, files in os.walk(search_dir):
-        for file in sorted(files):
-            if file.lower().endswith(tuple(extensions)):
-                file_list.append(os.path.join(root, file))
-                file_count += 1
-                if file_count % 100 == 0:
-                    print(f"{Fore.CYAN}Found {file_count} files so far...{Style.RESET_ALL}")
+        return "0 seconds"
     
-    print(f"{Fore.GREEN}Total files found: {file_count}{Style.RESET_ALL}")
-    
-    file_list_path = os.path.join(output_dir, "file_list.txt")
-    with open(file_list_path, 'w', encoding='utf-8') as f:
-        f.write(f"# Resume command: {original_command} -r {file_list_path}\n")
-        f.write("# Cursor: 0\n")
-        f.write("# You can use '#' for single-line comments and '\"\"\"' for multi-line comments\n")
-        f.write("# Files commented out will be skipped during processing\n\n")
-        for file_path in file_list:
-            f.write(f"{file_path}\n")
-    return file_list_path, file_count
+def format_number(number):
+    """
+    Format a number with thousands separators.
 
-def format_duration(seconds):
+    Args:
+    number (int, float, or Decimal): The number to format.
+
+    Returns:
+    str: The formatted number as a string.
+    """
+    if isinstance(number, (int, float)):
+        return f"{number:,}"
+    elif isinstance(number, Decimal):
+        return f"{number:f}".rstrip('0').rstrip('.')
+    else:
+        return str(number)
+
+
+def format_large_number(number):
+    """
+    Format a large number into a more readable string with suffix.
+
+    Args:
+    number (int, float, Decimal, or str): The number to format.
+
+    Returns:
+    str: The formatted number as a string with appropriate suffix.
+    """
     try:
-        seconds = float(seconds)
-        hours, remainder = divmod(seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        if hours > 0:
-            return f"{int(hours)} hours, {int(minutes)} minutes, and {seconds:.2f} seconds"
-        elif minutes > 0:
-            return f"{int(minutes)} minutes and {seconds:.2f} seconds"
+        if isinstance(number, str):
+            number = float(number)
+        if isinstance(number, Decimal):
+            number = float(number)
+        if number >= 1e15:
+            return f"{number/1e15:.2f} quadrillion"
+        elif number >= 1e12:
+            return f"{number/1e12:.2f} trillion"
+        elif number >= 1e9:
+            return f"{number/1e9:.2f} billion"
+        elif number >= 1e6:
+            return f"{number/1e6:.2f} million"
         else:
-            return f"{seconds:.2f} seconds"
+            return f"{number:,.0f}"
     except (ValueError, TypeError):
-        return "unknown duration"
+        return "Error: Invalid number"
 
-def normalize_path(path):
-    return os.path.abspath(path)
+def safe_float(value, default=0.0):
+    """
+    Safely convert a value to float, returning a default if conversion fails.
 
-def get_json_value(json_data, key_path, default="N/A"):
+    Args:
+    value: The value to convert to float.
+    default (float): The default value to return if conversion fails.
+
+    Returns:
+    float: The converted value or the default.
+    """
     try:
-        for key in key_path.split('.'):
-            if key.isdigit():
-                json_data = json_data[int(key)]
-            else:
-                json_data = json_data[key]
-        return json_data if json_data is not None else default
-    except (KeyError, IndexError, TypeError):
+        return float(value)
+    except (ValueError, TypeError):
         return default
 
-def is_empty_or_na(value):
-    return value in (None, "", "N/A", "null", "NULL", "Null")
+def safe_decimal(value, default=Decimal('0')):
+    """
+    Safely convert a value to Decimal, returning a default if conversion fails.
 
-def calculate_transcode_speed_ratio(transcode_speed, frame_rate):
+    Args:
+    value: The value to convert to Decimal.
+    default (Decimal): The default value to return if conversion fails.
+
+    Returns:
+    Decimal: The converted value or the default.
+    """
     try:
-        frame_rate = float(frame_rate)
+        return Decimal(value)
     except (ValueError, TypeError):
-        frame_rate = 24.0  # Default to 24 fps if frame_rate is not a valid number
+        return default
 
-    try:
-        transcode_speed = float(transcode_speed)
-        return transcode_speed / frame_rate
-    except (ValueError, TypeError, ZeroDivisionError):
-        return "Error"
+def get_terminal_width():
+    """
+    Get the width of the terminal.
 
-def get_transcode_speed_group(speed_ratio):
-    if speed_ratio == "Error":
-        return "Error"
-    try:
-        speed_ratio = float(speed_ratio)
-        if speed_ratio < 1.2:
-            return "Failed"
-        elif 1.2 <= speed_ratio < 2:
-            return "Low"
-        elif 2 <= speed_ratio < 3:
-            return "Medium"
-        else:
-            return "High"
-    except (ValueError, TypeError):
-        return "Error"
+    Returns:
+    int: The width of the terminal in characters.
+    """
+    return shutil.get_terminal_size().columns
 
-def get_video_duration(file_path):
+def print_progress(message):
+    """
+    Print a progress message, overwriting the current line.
+
+    Args:
+    message (str): The message to print.
+    """
+    terminal_width = get_terminal_width()
+    sys.stdout.write('\r' + ' ' * terminal_width)  # Clear the line
+    sys.stdout.write('\r' + message[:terminal_width - 1])
+    sys.stdout.flush()
+
+def remove_statistics_tags(tags):
+    """
+    Remove statistics tags from a dictionary.
+
+    Args:
+    tags (dict): A dictionary of tags.
+
+    Returns:
+    dict: A new dictionary with statistics tags removed.
+    """
+    return {k: v for k, v in tags.items() if not k.startswith('_STATISTICS_')}
+
+class CustomDialect(csv.excel):
+    """A custom CSV dialect."""
+    quoting = csv.QUOTE_NONE
+    escapechar = '\\'
+
+def custom_quoting(field):
+    """
+    Determine the quoting for a CSV field.
+
+    Args:
+    field (str): The field to check.
+
+    Returns:
+    int: The quoting constant to use for this field.
+    """
+    if field == 'Raw ffprobe output':
+        return csv.QUOTE_NONE
+    return csv.QUOTE_MINIMAL
+
+def count_files(root_folder, verbosity):
+    count = 0
+    for root, _, files in os.walk(root_folder):
+        for file in files:
+            if file.lower().endswith(('.mp4', '.avi', '.mkv', '.mov')):
+                count += 1
+                if verbosity >= 1:
+                    print_progress(f"{count} files discovered - Searching {root}")
+    if verbosity >= 1:
+        print()  # Move to the next line after counting
+    return count
+
+def safe_get_stat(stats, *keys, default="Error"):
+    """
+    Safely get a value from a nested dictionary.
+
+    Args:
+    stats (dict): The dictionary to search.
+    *keys: The keys to use for nested access.
+    default: The default value to return if the key is not found.
+
+    Returns:
+    The value found at the specified keys, or the default value.
+    """
     try:
-        result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', file_path], capture_output=True, text=True, check=True)
-        duration = float(result.stdout)
-        return duration
-    except (subprocess.CalledProcessError, ValueError) as e:
-        return None
+        value = stats
+        for key in keys:
+            value = value[key]
+        return value
+    except KeyError:
+        return default
+
+def combine_language_counts(language_counts):
+    """
+    Combine language counts, mapping 2-letter codes to 3-letter codes.
+
+    Args:
+    language_counts (Counter): A Counter object with language counts.
+
+    Returns:
+    dict: A dictionary with combined language counts.
+    """
+    combined = {}
+    
+    for lang, count in language_counts.items():
+        main_lang = LANGUAGE_MAPPING.get(lang, lang)
+        combined[main_lang] = combined.get(main_lang, 0) + count
+    
+    return combined
