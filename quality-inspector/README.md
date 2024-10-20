@@ -37,7 +37,7 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python3 video_quality_inspect.py [-h] [-s SCREENSHOT_PATH] [-ns SCREENSHOT_SAMPLES]
+python3 main.py [-h] [-s SCREENSHOT_PATH] [-ns SCREENSHOT_SAMPLES]
                                  [-nv VIDEO_SAMPLES] [-l VIDEO_LENGTH] [-v] [-f]
                                  [-e EXTENSIONS [EXTENSIONS ...]] [-c COMPARE_PATH]
                                  [-lt LOWER_THRESHOLD] [-ut UPPER_THRESHOLD]
@@ -73,43 +73,43 @@ python3 video_quality_inspect.py [-h] [-s SCREENSHOT_PATH] [-ns SCREENSHOT_SAMPL
 - Process all video files in a directory:
 
 ```bash
-python3 video_quality_inspect.py /path/to/videos
+python3 main.py /path/to/videos
 ```
 
 - Process only MKV and AVI files, save screenshots in a custom directory:
 
 ```bash
-python3 video_quality_inspect.py /path/to/videos -e mkv avi -s /path/to/custom/screenshots
+python3 main.py /path/to/videos -e mkv avi -s /path/to/custom/screenshots
 ```
 
 - Compare transcoded videos with originals:
 
 ```bash
-python3 video_quality_inspect.py /path/to/transcoded -c /path/to/original
+python3 main.py /path/to/transcoded -c /path/to/original
 ```
 
 - Generate more samples with longer video clips:
 
 ```bash
-python3 video_quality_inspect.py /path/to/videos -ns 5 -nv 5 -l 10
+python3 main.py /path/to/videos -ns 5 -nv 5 -l 10
 ```
 
 - Use custom bitrate thresholds and force video sample creation:
 
 ```bash
-python3 video_quality_inspect.py /path/to/videos -lt 80 -ut 120 --force-video-samples
+python3 main.py /path/to/videos -lt 80 -ut 120 --force-video-samples
 ```
 
 - Process all videos, ignoring thresholds and existing samples:
 
 ```bash
-python3 video_quality_inspect.py /path/to/videos --ignore-thresholds --force-all
+python3 main.py /path/to/videos --ignore-thresholds --force-all
 ```
 
 - Debug mode with verbose output:
 
 ```bash
-python3 video_quality_inspect.py /path/to/videos -v -d
+python3 main.py /path/to/videos -v -d
 ```
 
 ## Output
