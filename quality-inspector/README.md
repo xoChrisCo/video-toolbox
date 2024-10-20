@@ -38,12 +38,12 @@ pip install -r requirements.txt
 
 ```bash
 python3 main.py [-h] [-s SCREENSHOT_PATH] [-ns SCREENSHOT_SAMPLES]
-                                 [-nv VIDEO_SAMPLES] [-l VIDEO_LENGTH] [-v] [-f]
-                                 [-e EXTENSIONS [EXTENSIONS ...]] [-c COMPARE_PATH]
-                                 [-lt LOWER_THRESHOLD] [-ut UPPER_THRESHOLD]
-                                 [--ignore-thresholds] [--force-video-samples]
-                                 [--force-all] [-d]
-                                 input_path
+                [-nv VIDEO_SAMPLES] [-l VIDEO_LENGTH] [-v] [-f]
+                [-e EXTENSIONS [EXTENSIONS ...]] [-c COMPARE_PATH]
+                [-lt LOWER_THRESHOLD] [-ut UPPER_THRESHOLD]
+                [--ignore-thresholds] [--force-video-samples]
+                [--force-all] [-d]
+                input_path
 ```
 
 ### Arguments
