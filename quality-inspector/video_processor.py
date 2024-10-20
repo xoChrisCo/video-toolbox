@@ -1,3 +1,5 @@
+import csv
+import datetime
 import os
 import random
 import subprocess
@@ -37,8 +39,8 @@ class VideoProcessor:
         self.force_video_samples = args.force_video_samples
         self.total_screenshots = 0
         self.total_video_samples = 0
-        
-        # Create root folder for samples
+        self.csv_data = []
+        self.csv_path = args.csv_path if hasattr(args, 'csv_path') else './csv'
         self.root_folder_name = os.path.basename(os.path.normpath(self.input_path))
         self.root_sample_path = os.path.join(self.screenshot_path, self.root_folder_name)
         os.makedirs(self.root_sample_path, exist_ok=True)
@@ -55,6 +57,13 @@ class VideoProcessor:
         video_queue = self.scan_for_videos()
         self.debug_print(f"Video queue size: {len(video_queue)}")
         self.process_video_queue(video_queue)
+        
+        # Add debug information only when debug flag is set
+        if self.debug:
+            print(f"Debug: CSV data length: {len(self.csv_data)}")
+            print(f"Debug: First few CSV rows: {self.csv_data[:5]}")
+        
+        self.write_csv_output()
 
     def scan_for_videos(self):
         video_queue = []
@@ -90,7 +99,7 @@ class VideoProcessor:
                     if not os.path.exists(compare_file):
                         if self.verbose:
                             print(f"{Colors.YELLOW}Skipping {file} - No matching file in compare path{Colors.RESET}")
-                        continue
+                        compare_file = None
                 else:
                     compare_file = None
                 
@@ -99,19 +108,20 @@ class VideoProcessor:
                 
                 should_process_screenshots, should_process_video = self.should_process_video(input_file, compare_file, screenshot_dir)
                 
-                if should_process_screenshots or should_process_video:
-                    video_queue.append((input_file, compare_file, screenshot_dir, should_process_screenshots, should_process_video))
-                    queued_files += 1
-                    if self.verbose:
-                        print(f"{Colors.GREEN}Added to queue: {file} (Screenshots: {'Yes' if should_process_screenshots else 'No'}, Video: {'Yes' if should_process_video else 'No'}){Colors.RESET}")
-                elif self.verbose:
-                    print(f"{Colors.YELLOW}Skipping {file} - Already processed or unchanged{Colors.RESET}")
+                video_queue.append((input_file, compare_file, screenshot_dir, should_process_screenshots, should_process_video))
+                queued_files += 1
+                
+                # Collect CSV data for all files
+                csv_row = self.collect_csv_data(input_file, compare_file, screenshot_dir, 0, 0, should_process_screenshots, should_process_video)
+                self.csv_data.append(csv_row)
+                
+                if self.verbose:
+                    print(f"{Colors.GREEN}Added to queue: {file} (Screenshots: {'Yes' if should_process_screenshots else 'No'}, Video: {'Yes' if should_process_video else 'No'}){Colors.RESET}")
             
             if self.verbose:
                 print(f"{Colors.MAGENTA}Directory summary:{Colors.RESET}")
                 print(f"  - Files in queue: {queued_files}")
                 print(f"  - Files added from this directory: {queued_files - (total_files - len(video_files))}")
-                print(f"  - Files skipped in this directory: {len(video_files) - (queued_files - (total_files - len(video_files)))}")
             else:
                 clear_line()
                 print(f"\rTotal video files: {total_files}, Files in queue: {queued_files}, Scanning directory {processed_dirs}/{total_dirs}: {rel_path}", end='', flush=True)
@@ -252,6 +262,11 @@ class VideoProcessor:
                 else:
                     failed_files += 1
                     self.verbose_print(f"{Colors.RED}Failed {index}/{total_files}: {os.path.basename(input_file)} - No samples created{Colors.RESET}")
+                
+                # Update CSV data with actual results
+                csv_row = self.collect_csv_data(input_file, compare_file, screenshot_dir, screenshots_created, video_samples_created, should_process_screenshots, should_process_video)
+                self.csv_data[index - 1] = csv_row  # Update the existing row
+
             except Exception as e:
                 failed_files += 1
                 self.verbose_print(f"{Colors.RED}Failed {index}/{total_files}: {os.path.basename(input_file)} - Error: {str(e)}{Colors.RESET}")
@@ -260,7 +275,7 @@ class VideoProcessor:
         print()  # Print a newline after all processing is complete
         print(SUCCESS_MESSAGES['processing_complete'].format(
             processed=processed_files, 
-            skipped=0,
+            skipped=total_files - processed_files - failed_files,
             failed=failed_files,
             total_screenshots=self.total_screenshots,
             total_video_samples=self.total_video_samples
@@ -443,3 +458,125 @@ class VideoProcessor:
         secs = int(seconds % 60)
         millisecs = int((seconds - int(seconds)) * 1000)
         return f"{hours:02d}_{minutes:02d}_{secs:02d}_{millisecs:03d}"
+    
+    def collect_csv_data(self, input_file, compare_file, screenshot_dir, screenshots_created, video_samples_created, should_process_screenshots, should_process_video):
+        input_size = get_file_size(input_file)
+        input_bitrate = get_video_bitrate(input_file)
+        
+        csv_row = {
+            'Filename': os.path.basename(input_file),
+            'Extension': os.path.splitext(input_file)[1],
+            'Path': os.path.dirname(input_file),
+            'Size in bytes': input_size,
+            'Size in gigabytes': round(input_size / (1024**3), 2),
+            'Bitrate in bytes/second': input_bitrate,
+            'Bitrate in megabytes/second': round(input_bitrate / (1024**2), 2) if input_bitrate else None,
+            'Comp. Filename': '',
+            'Comp. Extension': '',
+            'Comp. Path': '',
+            'Comp. Size in bytes': '',
+            'Comp. Size in gigabytes': '',
+            'Comp. Bitrate in bytes/second': '',
+            'Comp. Bitrate in megabytes/second': '',
+            'Bitrate ratio percentage': '',
+            'Space saved in bytes': '',
+            'Space saved in GB': '',
+            'Number of screenshots extracted': screenshots_created,
+            'Number of video samples extracted': video_samples_created,
+            'Length of video samples in seconds': self.video_length,
+            'Screenshot result': '',
+            'Video Sample result': ''
+        }
+        
+        if compare_file:
+            comp_size = get_file_size(compare_file)
+            comp_bitrate = get_video_bitrate(compare_file)
+            
+            csv_row.update({
+                'Comp. Filename': os.path.basename(compare_file),
+                'Comp. Extension': os.path.splitext(compare_file)[1],
+                'Comp. Path': os.path.dirname(compare_file),
+                'Comp. Size in bytes': comp_size,
+                'Comp. Size in gigabytes': round(comp_size / (1024**3), 2),
+                'Comp. Bitrate in bytes/second': comp_bitrate,
+                'Comp. Bitrate in megabytes/second': round(comp_bitrate / (1024**2), 2) if comp_bitrate else None,
+                'Bitrate ratio percentage': round((input_bitrate / comp_bitrate) * 100, 2) if input_bitrate and comp_bitrate else None,
+                'Space saved in bytes': comp_size - input_size,
+                'Space saved in GB': round((comp_size - input_size) / (1024**3), 2)
+            })
+        
+        # Determine screenshot result
+        if should_process_screenshots:
+            if self.force and not self.directory_has_files(screenshot_dir, '.png'):
+                csv_row['Screenshot result'] = 'Processed (forced)'
+            else:
+                csv_row['Screenshot result'] = 'Processed'
+        else:
+            csv_row['Screenshot result'] = 'Skipped (existing screenshots found)'
+
+        
+        # Determine video sample result
+        if should_process_video:
+            if self.force and not self.directory_has_files(screenshot_dir, ('.mp4', '.mkv', '.avi')):
+                csv_row['Video Sample result'] = 'Processed (forced)'
+            else:
+                csv_row['Video Sample result'] = 'Processed'
+        else:
+            if self.comparison_mode:
+                bitrate_ratio = csv_row['Bitrate ratio percentage']
+                if bitrate_ratio is not None and bitrate_ratio != '':
+                    try:
+                        bitrate_ratio = float(bitrate_ratio)
+                        if self.lower_threshold * 100 <= bitrate_ratio <= self.upper_threshold * 100:
+                            csv_row['Video Sample result'] = f'Skipped (within threshold: {bitrate_ratio:.2f}%)'
+                        else:
+                            csv_row['Video Sample result'] = f'Processed (outside threshold: {bitrate_ratio:.2f}%)'
+                    except ValueError:
+                        # Handle case where bitrate_ratio is not a valid float
+                        csv_row['Video Sample result'] = 'Processed (invalid bitrate ratio)'
+                        self.debug_print(f"Invalid bitrate ratio: {bitrate_ratio}")
+                else:
+                    csv_row['Video Sample result'] = 'Processed (no bitrate ratio available)'
+            else:
+                csv_row['Video Sample result'] = 'Skipped (not in comparison mode)'
+
+            # Additional debug information
+            self.debug_print(f"Bitrate ratio: {bitrate_ratio}, type: {type(bitrate_ratio)}")
+            self.debug_print(f"Lower threshold: {self.lower_threshold}, type: {type(self.lower_threshold)}")
+            self.debug_print(f"Upper threshold: {self.upper_threshold}, type: {type(self.upper_threshold)}")
+
+        return csv_row
+
+    def write_csv_output(self):
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_filename = f"video_processing_results_{timestamp}.csv"
+        csv_filepath = os.path.join(self.csv_path, csv_filename)
+        
+        # Create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(csv_filepath), exist_ok=True)
+        
+        fieldnames = [
+            'Filename', 'Extension', 'Path', 'Size in bytes', 'Size in gigabytes',
+            'Bitrate in bytes/second', 'Bitrate in megabytes/second',
+            'Comp. Filename', 'Comp. Extension', 'Comp. Path', 'Comp. Size in bytes',
+            'Comp. Size in gigabytes', 'Comp. Bitrate in bytes/second',
+            'Comp. Bitrate in megabytes/second', 'Bitrate ratio percentage',
+            'Space saved in bytes', 'Space saved in GB', 'Number of screenshots extracted',
+            'Number of video samples extracted', 'Length of video samples in seconds',
+            'Screenshot result', 'Video Sample result'
+        ]
+        
+        with open(csv_filepath, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for i, row in enumerate(self.csv_data):
+                if row is None:
+                    print(f"{Colors.YELLOW}Warning: Skipping None row at index {i}{Colors.RESET}")
+                    continue
+                try:
+                    writer.writerow(row)
+                except Exception as e:
+                    print(f"{Colors.RED}Error writing row {i}: {str(e)}{Colors.RESET}")
+                    print(f"Problematic row: {row}")
+        
+        print(f"{Colors.GREEN}CSV output written to: {csv_filepath}{Colors.RESET}")

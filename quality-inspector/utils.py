@@ -41,26 +41,30 @@ def count_directories(path):
 
 def generate_summary(args):
     summary = [
-        f"{Colors.CYAN}{Styles.BOLD}Video Quality Comparison Tool - Execution Summary{Colors.RESET}",
+        f"{Colors.CYAN}{Styles.BOLD}Quality Inspector Tool - Execution Summary{Colors.RESET}",
         f"{Colors.CYAN}{'=' * 50}{Colors.RESET}",
         f"{Colors.GREEN}Transcoded videos path:{Colors.RESET} {args.transcode_path}",
         f"{Colors.GREEN}Original videos path:{Colors.RESET} {args.original_path}",
         f"{Colors.GREEN}Screenshots will be saved to:{Colors.RESET} {args.screenshot_path}",
+        f"{Colors.GREEN}CSV file will be saved to:{Colors.RESET} {args.csv_path}",
         f"{Colors.GREEN}Number of screenshot samples per video:{Colors.RESET} {args.screenshot_samples}",
+        f"{Colors.GREEN}Number of video samples per video:{Colors.RESET} {args.video_samples}",
+        f"{Colors.GREEN}Length of each video sample:{Colors.RESET} {args.video_length} seconds",
         f"{Colors.GREEN}Video file extensions to process:{Colors.RESET} {', '.join(args.extensions)}",
-        f"{Colors.GREEN}Force regeneration of existing screenshots:{Colors.RESET} {'Yes' if args.force else 'No'}",
+        f"{Colors.GREEN}Force regeneration of existing samples:{Colors.RESET} {'Yes' if args.force else 'No'}",
         f"{Colors.GREEN}Verbose output:{Colors.RESET} {'Enabled' if args.verbose else 'Disabled'}",
         f"{Colors.GREEN}Debug output:{Colors.RESET} {'Enabled' if args.debug else 'Disabled'}",
         f"\n{Colors.YELLOW}{Styles.BOLD}Operation mode:{Colors.RESET}",
         "- The script will scan all directories in the transcoded videos path.",
         "- It will compare each transcoded video with its original counterpart.",
-        f"- {'All videos will be processed, regardless of existing screenshots.' if args.force else 'Videos with existing screenshots will be skipped unless forced.'}"
+        f"- {'All videos will be processed, regardless of existing samples.' if args.force else 'Videos with existing samples will be skipped unless forced.'}",
         "- Videos with identical bitrates will be skipped.",
         f"\n{Colors.YELLOW}{Styles.BOLD}Process:{Colors.RESET}",
         "1. Scan directories and build a queue of videos to process.",
         "2. For each video in the queue:",
         "   a. Compare bitrates of transcoded and original videos.",
         "   b. If bitrates differ, generate screenshot samples.",
-        "   c. Save screenshots for visual comparison.",
+        "   c. If bitrates differ significantly, generate video samples.",
+        "   d. Save screenshots and video samples for visual comparison.",
     ]
     return "\n".join(summary)

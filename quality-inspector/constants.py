@@ -8,6 +8,9 @@ DEFAULT_VIDEO_EXTENSIONS = (
 # Default path to save samples
 DEFAULT_SAMPLE_PATH = "./samples"
 
+# Default path to save csv file
+DEFAULT_SAMPLE_CSV_PATH = "./csv"
+
 # Timeout for ffmpeg commands (in seconds)
 FFMPEG_TIMEOUT = 30
 
@@ -18,7 +21,7 @@ DEFAULT_SCREENSHOT_SAMPLES = 5
 DEFAULT_VIDEO_SAMPLES = 3
 
 # Default length of video samples in seconds
-DEFAULT_VIDEO_LENGTH = 7
+DEFAULT_VIDEO_LENGTH = 10
 
 # Default lower threshold for bitrate difference in percent
 DEFAULT_LOWER_THRESHOLD = 60

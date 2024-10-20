@@ -6,6 +6,12 @@ media-inventory/output/*
 quality-inspector/samples/*
 !quality-inspector/samples/.gitkeep
 
+# Ignore output folders
+*/[Ll]ogs/*
+*/[Ll]og/*
+csv
+CSV
+
 # Ignore Python cache files
 __pycache__/
 

@@ -103,6 +103,7 @@ from constants import (
     DEFAULT_LOWER_THRESHOLD,
     DEFAULT_UPPER_THRESHOLD,
     DEFAULT_SAMPLE_PATH,
+    DEFAULT_SAMPLE_CSV_PATH,
     ERROR_MESSAGES,
     Colors,
     Styles
@@ -131,6 +132,7 @@ def parse_arguments():
     parser.add_argument("input_path", help="Path to the video files (or transcoded files in comparison mode)")
     parser.add_argument("-c", "--compare_path", help="Path to the original video files for comparison mode")
     parser.add_argument("-s", "--screenshot_path", default=DEFAULT_SAMPLE_PATH, help=f"Path to save screenshots and video samples (default: {DEFAULT_SAMPLE_PATH})")
+    parser.add_argument("--csv_path", default=DEFAULT_SAMPLE_CSV_PATH, help=f"Path to save the CSV file (default: {DEFAULT_SAMPLE_CSV_PATH})")
     parser.add_argument("-ns", "--screenshot_samples", type=int, default=DEFAULT_SCREENSHOT_SAMPLES, help=f"Number of screenshot samples to take (default: {DEFAULT_SCREENSHOT_SAMPLES})")
     parser.add_argument("-nv", "--video_samples", type=int, default=DEFAULT_VIDEO_SAMPLES, help=f"Number of video samples to take (default: {DEFAULT_VIDEO_SAMPLES})")
     parser.add_argument("-l", "--video_length", type=int, default=DEFAULT_VIDEO_LENGTH, help=f"Length of video samples in seconds (default: {DEFAULT_VIDEO_LENGTH})")
